@@ -7,7 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             java: 8
             jobtype: 1
           - os: macos-latest
@@ -38,6 +38,15 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         shell: bash
         run: sudo apt-get -y install gcc-aarch64-linux-gnu
+      - name: Set up gcc-loongarch64-linux-gnu
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        run: |
+          X86_64_CROSS_LOONGARCH64_GCC_VERSION=x86_64-cross-tools-loongarch64-binutils_2.43-gcc_14.2.0-glibc_2.40
+          sudo apt-get -y install wget
+          wget https://github.com/loongson/build-tools/releases/download/2024.08.08/${X86_64_CROSS_LOONGARCH64_GCC_VERSION}.tar.xz
+          tar -xf ${X86_64_CROSS_LOONGARCH64_GCC_VERSION}.tar.xz -C /opt/
+          echo "/opt/cross-tools/bin" >> $GITHUB_PATH
       - name: Build and test (Linux)
         if: ${{ matrix.os == 'ubuntu-latest' }}
         shell: bash
@@ -52,13 +61,14 @@ jobs:
         shell: bash
         run: sbt "buildNativeArtifacts; test"
       - name: Archive native artifacts (Linux)
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v2
         with:
           name: dist-${{ runner.os }}
           path: |
             src/main/resources/linux/x86_64/libsbtipcsocket.so
             src/main/resources/linux/aarch64/libsbtipcsocket.so
+            src/main/resources/linux/loongarch64/libsbtipcsocket.so
             src/main/resources/win32/x86_64/sbtipcsocket.dll
       - name: Archive native artifacts (macOS)
         if: ${{ matrix.os == 'macos-latest' }}

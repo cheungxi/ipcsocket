@@ -53,6 +53,7 @@ artifacts can be found under the Artifacts section as
 The dist-Linux.zip provides:
 * src/main/resources/linux/x86_64/libsbtipcsocket.so
 * src/main/resources/linux/aarch64/libsbtipcsocket.so
+* src/main/resources/linux/loongarch64/libsbtipcsocket.so
 * src/main/resources/win32/x86_64/sbtipcsocket.dll
 
 while the dist-macOS.zip provides:

@@ -22,6 +22,7 @@ val buildDarwinX86_64 = taskKey[Path]("Build mac native library for x86_64")
 val buildDarwinArm64 = taskKey[Path]("Build mac native library for arm64")
 val buildLinuxX86_64 = taskKey[Path]("Build Linux native library for x86_64")
 val buildLinuxAarch64 = taskKey[Path]("Build Linux native library for Aarch64")
+val buildLinuxLoongarch64 = taskKey[Path]("Build Linux native library for Loongarch64")
 val buildWin32X86_64 = taskKey[Path]("Build windows native library for x86_64")
 
 val isMac = scala.util.Properties.isMac
@@ -91,9 +92,11 @@ nativeLibrarySettings("darwinX86_64")
 nativeLibrarySettings("darwinArm64")
 nativeLibrarySettings("linuxX86_64")
 nativeLibrarySettings("linuxAarch64")
+nativeLibrarySettings("linuxLoongarch64")
 nativeLibrarySettings("win32X86_64")
 if (!isWin) (buildWin32X86_64 / nativeCompiler := "x86_64-w64-mingw32-gcc") :: Nil else Nil
 buildLinuxAarch64 / nativeCompiler := "aarch64-linux-gnu-gcc"
+buildLinuxLoongarch64 / nativeCompiler := "loongarch64-unknown-linux-gnu-gcc"
 buildWin32X86_64 / skip := {
   val s = streams.value
   Try(s"which ${(buildWin32X86_64 / nativeCompiler).value}".!!).fold(_ => {
@@ -106,7 +109,7 @@ buildWin32X86_64 / skip := {
 Test / fork := true
 clangfmt / fileInputs += baseDirectory.value.toGlob / "jni" / "*.c"
 commands += Command.command("buildNativeArtifacts") { state =>
-  "buildLinuxX86_64" :: "buildLinuxAarch64" :: "buildDarwin" :: "buildWin32X86_64" :: state
+  "buildLinuxX86_64" :: "buildLinuxAarch64" :: "buildLinuxLoongarch64" :: "buildDarwin" :: "buildWin32X86_64" :: state
 }
 
 Global / javaHome := {
@@ -130,6 +133,7 @@ def nativeLibrarySettings(platform: String): Seq[Setting[_]] = {
       val orig = (key / nativeArch).value
       if (platform.contains("Arm64")) "arm64"
       else if (platform.contains("Aarch64")) "aarch64"
+      else if (platform.contains("Loongarch64")) "loongarch64"
       else orig
     },
     key / nativeCompileOptions ++= (shortPlatform match {
